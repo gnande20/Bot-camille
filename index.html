@@ -1,0 +1,23 @@
+async function sendMessageToGoaBot(msg){
+  addBubble(msg,'me');        // affiche ton message
+  chatInput.value='';         // reset input
+
+  // Envoi à Firebase
+  db.ref('messages').push({pseudo:'Moi', text: msg, timestamp: Date.now()});
+
+  // Appel ChatGPT backend
+  try{
+    const res = await fetch('https://TON_BACKEND_URL/ask',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message: msg})
+    });
+    const data = await res.json();
+    addBubble('GoaBot: '+data.reply,'bot');
+
+    // aussi push dans Firebase pour que les autres voient
+    db.ref('messages').push({pseudo:'GoaBot', text:data.reply, timestamp:Date.now()});
+  }catch(err){
+    addBubble('GoaBot: Désolé, je ne peux pas répondre pour le moment.','bot');
+  }
+}
